@@ -35,7 +35,7 @@ HR Department has shared two files:
 Checked the data for uniqueness, format and outliers.  
 
   
-Survey dataset didn't have a unique key, so two columns "Question Round" and "Answer ID" were merged to create one called "AnswerKey".  
+Survey dataset didn't have a unique key, so two columns "Question Round" and "Answer ID" were merged to create one called "Answer Key".  
 
   
 From the HR Dataset, the personal information columns "First Name", "Last Name" and "Email" were removed. Also, the "Employement Status" column was removed due to not being up to date.
