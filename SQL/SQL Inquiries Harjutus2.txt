@@ -1,0 +1,187 @@
+-- A Cafe Sales Data from the Sales Management System. The query checks data quality and fixes errors.
+
+-- 1.1. Check uniqueness of the "transaction_id".
+
+SELECT COUNT(transaction_id) - COUNT(DISTINCT transaction_id) as difference_from_rows
+FROM cafe_sales;
+
+
+-- 2.1. Check the values of the "item" column.
+
+SELECT item, COUNT(*) as number_of_rows
+FROM cafe_sales
+GROUP BY item
+ORDER BY number_of_rows ASC;
+
+-- 2.2. Create a new column "item_cleaned" where ERROR and NULL are mapped to UNKNOWN.
+-- Select distinct values from "item" and "item_cleaned" column.
+
+SELECT DISTINCT item,
+CASE WHEN item = 'ERROR' THEN 'UNKNOWN'
+WHEN item IS NULL THEN 'UNKNOWN'
+ELSE item
+END AS item_cleaned
+FROM cafe_sales;
+
+
+-- 3.1. Check if quantity is a whole number.
+
+SELECT *
+FROM cafe_sales
+WHERE quantity % 1 <> 0;
+
+-- 3.2. Check quantity values
+
+SELECT quantity, COUNT(*) as number_of_rows
+FROM cafe_sales
+GROUP BY quantity
+ORDER BY number_of_rows ASC;
+
+
+-- 4.1. Check the MIN and MAX values of the "unit_price" column.
+
+SELECT
+MIN(unit_price) as minimum_unit_price,
+MAX(unit_price) as maximum_unit_price
+FROM cafe_sales;
+
+-- 4.2. Check if the "unit_price" column values are numbers.
+
+SELECT DISTINCT unit_price, typeof(unit_price)
+FROM cafe_sales
+WHERE typeof(unit_price) != 'real';
+
+-- 4.3. Select rows where "unit_price" a decimal number.
+
+SELECT *
+FROM cafe_sales
+WHERE typeof(unit_price) = 'real';
+
+
+-- 5.1. Check if the "total_spent" column values are numbers.
+
+SELECT DISTINCT total_spent, typeof(total_spent)
+FROM cafe_sales
+WHERE typeof(total_spent) != 'real';
+
+-- 5.2. Create a new column "total_spent_calculated" where we have multiplied the "quantity" with the "unit_price".
+-- Select only rows where the "unit_price" is a number.
+
+SELECT quantity * unit_price AS total_spent_calculated
+FROM cafe_sales
+WHERE typeof(unit_price) = 'real';
+
+
+-- 6.1. Check the values of the "payment_method" column.
+
+SELECT payment_method, COUNT(*) as number_of_rows
+FROM cafe_sales
+GROUP BY payment_method
+ORDER BY number_of_rows ASC;
+
+-- 6.2. Create a new column "payment_method_cleaned" where ERROR and NULL are mapped to UNKNOWN.
+
+SELECT DISTINCT payment_method,
+CASE WHEN payment_method = 'ERROR' THEN 'UNKNOWN'
+WHEN payment_method IS NULL THEN 'UNKNOWN'
+ELSE payment_method
+END AS payment_method_cleaned
+FROM cafe_sales;
+
+
+-- 7.1. Check the values of the "location" column.
+
+SELECT location, COUNT(*) as number_of_rows
+FROM cafe_sales
+GROUP BY location
+ORDER BY location ASC;
+
+-- 7.2. Create a new column "location_cleaned" where ERROR and NULL are mapped to UNKNOWN.
+
+SELECT DISTINCT location,
+CASE WHEN location = 'ERROR' THEN 'UNKNOWN'
+WHEN location IS NULL THEN 'UNKNOWN'
+ELSE location
+END AS location_cleaned
+FROM cafe_sales;
+
+
+-- 8.1. Check invalid values of the "transaction_date" column.
+
+SELECT DISTINCT transaction_date, DATE(transaction_date)
+FROM cafe_sales
+WHERE DATE(transaction_date) IS NULL OR transaction_date != DATE(transaction_date)
+ORDER BY transaction_date DESC;
+
+-- 8.2. Select only the rows where the "transaction_date" is a valid date.
+
+SELECT *
+FROM cafe_sales
+WHERE DATE(transaction_date) IS NOT NULL AND transaction_date = DATE(transaction_date)
+ORDER BY transaction_date ASC;
+
+
+
+-- Create a clean dataset
+
+SELECT 
+	transaction_id,
+	item,
+      CASE WHEN item = 'ERROR' THEN 'UNKNOWN'
+      WHEN item IS NULL THEN 'UNKNOWN'
+      ELSE item
+      END AS item_cleaned,
+	quantity,
+	unit_price,
+	quantity * unit_price AS total_spent_calculated,
+    payment_method,
+      CASE WHEN payment_method = 'ERROR' THEN 'UNKNOWN'
+      WHEN payment_method IS NULL THEN 'UNKNOWN'
+      ELSE payment_method
+      END AS payment_method_cleaned,
+	location,
+      CASE WHEN location = 'ERROR' THEN 'UNKNOWN'
+      WHEN location IS NULL THEN 'UNKNOWN'
+      ELSE location
+      END AS location_cleaned
+FROM cafe_sales
+WHERE
+	typeof(unit_price) = 'real'
+	AND
+	DATE(transaction_date) IS NOT NULL
+	AND
+	transaction_date = DATE(transaction_date);
+
+
+-- Create a new table called "sales_table_cleaned"
+
+CREATE TABLE sales_table_cleaned AS
+SELECT 
+	transaction_id,
+	item,
+      CASE WHEN item = 'ERROR' THEN 'UNKNOWN'
+      WHEN item IS NULL THEN 'UNKNOWN'
+      ELSE item
+      END AS item_cleaned,
+	quantity,
+	unit_price,
+	quantity * unit_price AS total_spent_calculated,
+    payment_method,
+      CASE WHEN payment_method = 'ERROR' THEN 'UNKNOWN'
+      WHEN payment_method IS NULL THEN 'UNKNOWN'
+      ELSE payment_method
+      END AS payment_method_cleaned,
+	location,
+      CASE WHEN location = 'ERROR' THEN 'UNKNOWN'
+      WHEN location IS NULL THEN 'UNKNOWN'
+      ELSE location
+      END AS location_cleaned
+FROM cafe_sales
+WHERE
+typeof(unit_price) = 'real'
+	AND
+	DATE(transaction_date) IS NOT NULL
+	AND
+	transaction_date = DATE(transaction_date);
+
+
